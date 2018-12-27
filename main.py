@@ -15,6 +15,66 @@ def delete1():
 def delete2():
     screen2.destroy()
 
+def logout():
+    print("Logging out...")
+
+def edit():
+    global screen4
+    screen4 = Toplevel(wn)
+    screen4.title("Edit")
+    screen4.geometry("300x250")
+
+    global oldusername
+    global oldpassword
+    global newusername
+    global newpassword
+
+    oldusername = StringVar()
+    oldpassword = StringVar()
+
+    newusername = StringVar()
+    newpassword = StringVar()
+
+    Label(screen4, text = "Old Username * ").pack()
+    username_entry2 = Entry(screen4, textvariable = oldusername).pack()
+    Label(screen4, text = "Old Password * ").pack()
+    password_entry2 =  Entry(screen4, textvariable = oldpassword).pack()
+
+    Label(screen4, text = "New Username * ").pack()
+    username_entry3 = Entry(screen4, textvariable = newusername).pack()
+    Label(screen4, text = "New Password * ").pack()
+    password_entry3 =  Entry(screen4, textvariable = newpassword).pack()
+    Label(screen4, text = "").pack()
+    Button(screen4, text = "Update", width = 10, height = 1, command = update_user).pack()
+
+def update_user():
+    c.execute('SELECT * FROM user')
+    if (newusername.get() == oldusername.get()) and (newpassword.get() == oldpassword.get()):
+        messagebox.showerror('The information is the same')
+    else:
+        c.execute('UPDATE user SET username = ? WHERE username = ?', (newusername.get(), oldusername.get()))
+        c.execute('UPDATE user SET password = ? WHERE password = ?', (newpassword.get(), oldpassword.get()))
+        conn.commit()
+
+        if c.fetchall():
+            messagebox.showerror('Error')
+        else:
+            messagebox.showinfo('Account information updated!')
+
+def delete():
+    print("Deleting...")
+
+def dashboard():
+    global screen3
+    screen3 = Toplevel(wn)
+    screen3.title("Dashboard")
+    screen3.geometry("300x250")
+    Label(screen3, text = "Welcome to your dashboard!").pack()
+    Button(screen3, text = "Log out", command = logout).pack()
+    Button(screen3, text = "Edit account information", command = edit).pack()
+    Button(screen3, text = "Delete account", command = delete).pack()
+
+
 def register_user():
     username_info = username.get()
     password_info = password.get()
@@ -29,8 +89,7 @@ def register_user():
         Label(screen1, text="Account created!").pack()
         Button(screen1, text="OK", command=delete1).pack()
 
-    params = (username_info, password_info)
-    c.execute('INSERT INTO user VALUES(?,?)', params)
+    c.execute('INSERT INTO user VALUES(?,?)', (username_info, password_info))
     conn.commit()
 
 
@@ -66,13 +125,12 @@ def register():
     Button(screen1, text = "Register", width = 10, height = 1, command = register_user).pack()
 
 def login_user():
-    username1 = username_verify.get()
-    password1 = password_verify.get()
     find_user = ("SELECT * FROM user WHERE username = ? AND password = ?")
     c.execute(find_user,[username_verify.get(),password_verify.get()])
     if c.fetchall():
         Label(screen2, text="Logged in!").pack()
         Button(screen2, text="OK", command=delete2).pack()
+        dashboard()
     else:
         messagebox.showerror("Oops! There is no such account with that username.")
 
@@ -84,6 +142,8 @@ def login():
 
     global username_verify
     global password_verify
+    global username_entry1
+    global password_entry1
 
     username_verify = StringVar()
     password_verify = StringVar()

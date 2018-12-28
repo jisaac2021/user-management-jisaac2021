@@ -1,11 +1,10 @@
 from tkinter import *
 from tkinter import messagebox
-import os
 import sqlite3
 
 conn = sqlite3.connect("userinfo.db")
 c = conn.cursor()
-c.execute("CREATE TABLE IF NOT EXISTS user(username TEXT,password TEXT)")
+c.execute("CREATE TABLE IF NOT EXISTS user(username text NOT NULL UNIQUE, password text NOT NULL UNIQUE)")
 c.execute("SELECT * FROM user")
 conn.commit()
 
@@ -15,27 +14,21 @@ def delete1():
 def delete2():
     screen2.destroy()
 
+def delete3():
+    screen3.destroy()
+
 def register_user():
     find_user = ("SELECT * FROM user WHERE username = ?")
     c.execute(find_user,[(username.get())])
 
     if c.fetchall():
-        messagebox.showerror("Error")
+        messagebox.showerror("Error!", "There is already an account with that username")
     else:
-        messagebox.showinfo("Success!")
+        c.execute('INSERT INTO user VALUES(?,?)', (username.get(), password.get()))
+        conn.commit()
+        messagebox.showinfo("Success!", "Account created")
         Label(screen1, text="Account created!").pack()
         Button(screen1, text="OK", command=delete1).pack()
-
-    c.execute('INSERT INTO user VALUES(?,?)', (username.get(), password.get()))
-    conn.commit()
-
-
-    """with open('userinfo.txt',"w") as file:
-
-        file.write(username_info)
-        file.write(",")
-        file.write(password_info)
-        file.write("\n")"""
 
 def register():
     global screen1
@@ -69,7 +62,7 @@ def login_user():
         #Button(screen2, text="OK", command=delete2).pack()
         dashboard()
     else:
-        messagebox.showerror("Oops! There is no such account with that username.")
+        messagebox.showerror("Error!", "Your account information is invalid")
 
 def login():
     global screen2
@@ -142,12 +135,22 @@ def update_user():
         conn.commit()
 
         if c.fetchall():
-            messagebox.showerror('Error')
+            messagebox.showerror("Error", "We could not update your account information")
         else:
-            messagebox.showinfo('Account information updated!')
+            messagebox.showinfo("Success!", "Account information updated")
 
 def delete():
-    print("Deleting...")
+    result = messagebox.askquestion("Delete", "Are you sure? This will delete your account.", icon='warning')
+    if result == 'yes':
+        print("Deleting...")
+        c.execute('DELETE FROM user WHERE username = ?', (username_verify.get(),))
+        conn.commit()
+        delete3()
+        username_entry1.delete(0, END)
+        password_entry1.delete(0, END)
+
+    else:
+        print("Your account remains active")
 
 
 def dashboard():

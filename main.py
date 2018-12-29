@@ -8,6 +8,8 @@ c.execute("CREATE TABLE IF NOT EXISTS user(username text NOT NULL UNIQUE, passwo
 c.execute("SELECT * FROM user")
 conn.commit()
 
+screen3 = None
+
 def delete1():
     screen1.destroy()
 
@@ -20,15 +22,16 @@ def delete3():
 def register_user():
     find_user = ("SELECT * FROM user WHERE username = ?")
     c.execute(find_user,[(username.get())])
-
-    if c.fetchall():
-        messagebox.showerror("Error!", "There is already an account with that username")
+    if len(username.get()) == 0:
+        messagebox.showerror("Error!", "Please enter a valid username.")
+    elif c.fetchall():
+        messagebox.showerror("Error!", "There is already an account with that username.")
     else:
         c.execute('INSERT INTO user VALUES(?,?)', (username.get(), password.get()))
         conn.commit()
-        messagebox.showinfo("Success!", "Account created")
-        Label(screen1, text="Account created!").pack()
-        Button(screen1, text="OK", command=delete1).pack()
+        messagebox.showinfo("Success!", "Account created.\nLog in from the main menu.")
+        #Label(screen1, text="Account created!").pack()
+        Button(screen1, text="Exit", command=delete1).pack()
 
 def register():
     global screen1
@@ -55,14 +58,17 @@ def register():
     Button(screen1, text = "Register", width = 10, height = 1, command = register_user).pack()
 
 def login_user():
-    find_user = ("SELECT * FROM user WHERE username = ? AND password = ?")
-    c.execute(find_user,[username_verify.get(),password_verify.get()])
-    if c.fetchall():
-        #Label(screen2, text="Logged in!").pack()
-        #Button(screen2, text="OK", command=delete2).pack()
-        dashboard()
+    if (screen3 is not None) and screen3.winfo_exists():
+        messagebox.showerror("Error!", "You are already logged in, " + username_verify.get() + ".")
     else:
-        messagebox.showerror("Error!", "Your account information is invalid")
+        find_user = ("SELECT * FROM user WHERE username = ? AND password = ?")
+        c.execute(find_user,[username_verify.get(),password_verify.get()])
+        if c.fetchall():
+            #Label(screen2, text="Logged in!").pack()
+            #Button(screen2, text="OK", command=delete2).pack()
+            dashboard()
+        else:
+            messagebox.showerror("Error!", "Your account information is invalid.")
 
 def login():
     global screen2
@@ -122,25 +128,23 @@ def edit():
     username_entry3 = Entry(screen4, textvariable = newusername).pack()
     Label(screen4, text = "New Password * ").pack()
     password_entry3 =  Entry(screen4, textvariable = newpassword).pack()
-    Label(screen4, text = "").pack()
     Button(screen4, text = "Update", width = 10, height = 1, command = update_user).pack()
 
 def update_user():
-    c.execute('SELECT * FROM user')
+    find_user = ("SELECT * FROM user WHERE username = ? AND password = ?")
+    c.execute(find_user,[oldusername.get(),oldpassword.get()])
     if (newusername.get() == oldusername.get()) and (newpassword.get() == oldpassword.get()):
-        messagebox.showerror('The information is the same. Try again')
+        messagebox.showerror("Error!", "The information is the same. Try again.")
+    elif not c.fetchall():
+        messagebox.showerror("Error!", "Please enter valid account information.")
     else:
         c.execute('UPDATE user SET username = ? WHERE username = ?', (newusername.get(), oldusername.get()))
         c.execute('UPDATE user SET password = ? WHERE password = ?', (newpassword.get(), oldpassword.get()))
         conn.commit()
-
-        if c.fetchall():
-            messagebox.showerror("Error", "We could not update your account information")
-        else:
-            messagebox.showinfo("Success!", "Account information updated")
+        messagebox.showinfo("Success!", "Account information updated")
 
 def delete():
-    result = messagebox.askquestion("Delete", "Are you sure? This will delete your account.", icon='warning')
+    result = messagebox.askquestion("Delete", "Are you sure? This will permanently delete your account.", icon='warning')
     if result == 'yes':
         print("Deleting...")
         c.execute('DELETE FROM user WHERE username = ?', (username_verify.get(),))
@@ -148,9 +152,8 @@ def delete():
         delete3()
         username_entry1.delete(0, END)
         password_entry1.delete(0, END)
-
     else:
-        print("Your account remains active")
+        messagebox.showinfo("Alert!", "Your account remains active.")
 
 
 def dashboard():
@@ -161,7 +164,7 @@ def dashboard():
     Label(screen3, text = "Welcome " + username_verify.get() + " to your dashboard!").pack()
     Button(screen3, text = "Log out", command = logout).pack()
     Button(screen3, text = "Edit account information", command = edit).pack()
-    Button(screen3, text = "Delete account", command = delete).pack()
+    Button(screen3, text = "Delete account", command = delete, fg = 'red').pack()
 
 def main():
     global wn
@@ -171,7 +174,6 @@ def main():
 
     Label(text = "User Management", bg = "grey", width = "300", height = "2", pady=40).pack()
     Button(text = "Login", height = "2", width = "30", command = login).pack()
-    Label(text = "")
     Button(text = "Register", height = "2", width = "30", command = register).pack()
     wn.mainloop()
 

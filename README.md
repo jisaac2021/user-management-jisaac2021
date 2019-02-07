@@ -36,23 +36,6 @@ username or password by editing the file containing all user data.
 Only for a logged in user, this function should prompt the user with a
 warning and then delete their data from the file containing all user data.
 
-## Extra Challenges
-The following suggestions are extra challenges to make your program
-more sophisticated.
-
-#### Password Reset
-Implement password reset functionality so that if a user forgets
-their password, their account can be recovered.
-
-#### Profile Data
-Include extra user data, beyond a username and password, in the
-registration process. Then make a simple profile page for displaying
-that info.
-
-#### Data Storage
-Instead of storing a plain text file, use a json file, or use a
-database such as sqlite or MongoDB.
-
 ## Code
 Code snippets and hints that might be useful
 
@@ -102,7 +85,35 @@ while not exit:
         exit = True
 ```
 
+#### Create an md5 hash
+```python
+>>> import hashlib
+>>> password = 'super secret pass phrase'
+>>> hash = hashlib.md5(password.encode('utf-8')).hexdigest()
+>>> hash
+'187813013127e6b4679f0378ec99afb5'
+>>>
+```
+
 ## Grading
 Please review the rubrics for grading. When you are finished,
 modify this README file with entirely your own content. Be sure
 to use markdown to make the README professionally formatted.
+
+
+#### Level 1
+The system has a main menu and a `register` function that allows the user to save a username and password in a text file. The system also has a `login` function that allows a user to type in a username and password and then opens the file to see if it matches and returns `True` on a successful login.
+
+#### Level 2
+The system allows for logging out and for multiple users to register accounts. This means the system will save multiple lines (users) in the text file and search through it when one tries to log in.
+
+#### Level 3.1
+The system allows users to save extra profile data and view/edit their info.
+
+#### Level 3.2
+The system stores passwords as md5 hashes or similar to enhance security.
+
+#### Level 4
+The system is more sophisticated than Level 3. For example, instead of storing a plain text file, use a json file, or use a
+database such as sqlite or MongoDB. Another idea is to implement password reset functionality so that if a user forgets
+their password, their account can be recovered (see sendgrid in your GitHub student developer pack). You can also use a web server like Flask to create a web app implementing a user management system.

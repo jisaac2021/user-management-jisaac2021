@@ -2,7 +2,7 @@
 
 ## Challenge
 This project is a GUI user management system that allows users to register an account, login with a username and password, and logout. After logging in, a user will be allowed to edit their profile data and/or delete their
-account. This application is able to register multiple users.
+account. This application is able to register multiple users and store their information in a SQL database.
 
 ***You will not need to install any extra programs but the file does use Tkinter for GUI functionality and MessageBox and Sqlite to store each user's information in the file userinfo.db.***
 
@@ -11,6 +11,14 @@ Run main.py in terminal (CodingClass/user-management-jisaac2021) to start the pr
 cd CodingClass/user-management-jisaac2021
 python3 main.py
 ```
+
+Notice how a database is not stored in this repository because it is created once the file main.py is first run.
+Here is the snippet of code that does this:
+
+```python
+c.execute("CREATE TABLE IF NOT EXISTS user(username text NOT NULL UNIQUE, password text NOT NULL UNIQUE)")
+```
+
 This should prompt the user with the two options: to Login or Register.
 
 ![image](https://github.com/kehillah-coding-2019/user-management-jisaac2021/blob/master/mainmenu.png)

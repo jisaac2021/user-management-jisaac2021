@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import sqlite3
+import hashlib
 
 conn = sqlite3.connect("userinfo.db")
 c = conn.cursor()
@@ -27,7 +28,8 @@ def register_user():
     elif c.fetchall():
         messagebox.showerror("Error!", "There is already an account with that username.")
     else:
-        c.execute('INSERT INTO user VALUES(?,?)', (username.get(), password.get()))
+        password_hash = hashlib.md5(password.get().encode('utf-8')).hexdigest()
+        c.execute('INSERT INTO user VALUES(?,?)', (username.get(), password_hash))
         conn.commit()
         messagebox.showinfo("Success!", "Account created.\nLog in from the main menu.")
         #Label(screen1, text="Account created!").pack()
@@ -49,7 +51,6 @@ def register():
     Label(screen1, text = "Please enter your details below").pack()
     Label(screen1, text = "").pack()
     Label(screen1, text = "Username * ").pack()
-
     username_entry = Entry(screen1, textvariable = username).pack()
     Label(screen1, text = "Password * ").pack()
     Label(screen1, text = "")
@@ -62,7 +63,8 @@ def login_user():
         messagebox.showerror("Error!", "You are already logged in, " + username_verify.get() + ".")
     else:
         find_user = ("SELECT * FROM user WHERE username = ? AND password = ?")
-        c.execute(find_user,[username_verify.get(),password_verify.get()])
+        password_checkhash = hashlib.md5(password_verify.get().encode('utf-8')).hexdigest()
+        c.execute(find_user,[username_verify.get(),password_checkhash])
         if c.fetchall():
             #Label(screen2, text="Logged in!").pack()
             #Button(screen2, text="OK", command=delete2).pack()
@@ -154,7 +156,6 @@ def delete():
         password_entry1.delete(0, END)
     else:
         messagebox.showinfo("Alert!", "Your account remains active.")
-
 
 def dashboard():
     global screen3

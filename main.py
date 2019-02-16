@@ -2,10 +2,13 @@ from tkinter import *
 from tkinter import messagebox
 import sqlite3
 import hashlib
+import sendgrid
+import os
+from sendgrid.helpers.mail import *
 
 conn = sqlite3.connect("userinfo.db")
 c = conn.cursor()
-c.execute("CREATE TABLE IF NOT EXISTS user(username text NOT NULL UNIQUE, password text NOT NULL UNIQUE)")
+c.execute("CREATE TABLE IF NOT EXISTS user(username text NOT NULL UNIQUE, password text NOT NULL, email text NOT NULL)")
 c.execute("SELECT * FROM user")
 conn.commit()
 
@@ -25,15 +28,32 @@ def register_user():
     c.execute(find_user,[(username.get())])
     if len(username.get()) == 0:
         messagebox.showerror("Error!", "Please enter a valid username.")
+    elif len(password.get()) == 0:
+        messagebox.showerror("Error!", "Please enter a valid password.")
+    elif len(email.get()) > 0 and ("@" not in email.get()):
+        messagebox.showerror("Error!", "Please enter a valid email.")
     elif c.fetchall():
         messagebox.showerror("Error!", "There is already an account with that username.")
     else:
         password_hash = hashlib.md5(password.get().encode('utf-8')).hexdigest()
-        c.execute('INSERT INTO user VALUES(?,?)', (username.get(), password_hash))
+        c.execute('INSERT INTO user VALUES(?,?,?)', ((username.get(), password_hash, email.get())))
         conn.commit()
         messagebox.showinfo("Success!", "Account created.\nLog in from the main menu.")
-        #Label(screen1, text="Account created!").pack()
-        Button(screen1, text="Exit", command=delete1).pack()
+        print(email.get())
+        if email.get() != "":
+            sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('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'))
+            from_email = Email("usermanagement@gmail.com")
+            to_email = Email(email.get())
+            subject = "Your account has been created!"
+            content = Content("text/plain", "and easy to do anywhere, even with Python")
+            mail = Mail(from_email, subject, to_email, content)
+            response = sg.client.mail.send.post(request_body=mail.get())
+            print(response.status_code)
+            print(response.body)
+            print(response.headers)
+        else:
+            pass
+        # Button(screen1, text="Exit", command=delete1).pack()
 
 def register():
     global screen1
@@ -43,19 +63,22 @@ def register():
 
     global username
     global password
+    global email
     global username_entry
     global password_entry
+    global email_entry
 
     username = StringVar()
     password = StringVar()
+    email = StringVar()
     Label(screen1, text = "Please enter your details below").pack()
     Label(screen1, text = "").pack()
     Label(screen1, text = "Username * ").pack()
     username_entry = Entry(screen1, textvariable = username).pack()
     Label(screen1, text = "Password * ").pack()
-    Label(screen1, text = "")
     password_entry =  Entry(screen1, textvariable = password).pack()
-    Label(screen1, text = "").pack()
+    Label(screen1, text = "Email").pack()
+    email_entry =  Entry(screen1, textvariable = email).pack()
     Button(screen1, text = "Register", width = 10, height = 1, command = register_user).pack()
 
 def login_user():
@@ -71,6 +94,7 @@ def login_user():
             dashboard()
         else:
             messagebox.showerror("Error!", "Your account information is invalid.")
+
 
 def login():
     global screen2
@@ -92,11 +116,11 @@ def login():
     username_entry1 = Entry(screen2, textvariable = username_verify)
     username_entry1.pack()
     Label(screen2, text = "Password * ").pack()
-    Label(screen2, text = "")
     password_entry1 =  Entry(screen2, textvariable = password_verify)
     password_entry1.pack()
     Label(screen2, text = "").pack()
     Button(screen2, text = "Login", width = 10, height = 1, command = login_user).pack()
+
 
 def logout():
     screen3.destroy()

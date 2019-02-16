@@ -4,7 +4,13 @@
 This project is a GUI user management system that allows users to register an account, login with a username and password, and logout. After logging in, a user will be allowed to edit their profile data and/or delete their
 account. This application is able to register multiple users and store their information in a SQL database.
 
-***You will not need to install any extra programs but the file does use Tkinter for GUI functionality and MessageBox and Sqlite to store each user's information in the file userinfo.db.***
+***Before running, you must install the prerequisite programs in the requirements.txt file like so:*** 
+
+```python
+pip install -r requirements.txt
+```
+
+***Note that the main.py file does use Tkinter for GUI functionality and MessageBox and Sqlite to store each user's information in the file userinfo.db.***
 
 Run main.py in terminal (CodingClass/user-management-jisaac2021) to start the program:
 ```terminal
@@ -51,5 +57,6 @@ Only for a logged in user, this function prompts the user with a
 warning and then deletes their data from the user database.
 
 Here is the overall look of the dashboard (once a user logs in).
+
 ![image](https://github.com/kehillah-coding-2019/user-management-jisaac2021/blob/master/dashboard.png)
 

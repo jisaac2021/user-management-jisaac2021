@@ -39,10 +39,9 @@ def register_user():
         c.execute('INSERT INTO user VALUES(?,?,?)', ((username.get(), password_hash, email.get())))
         conn.commit()
         messagebox.showinfo("Success!", "Account created.\nLog in from the main menu.")
-        print(email.get())
-        if email.get() != "":
-            sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('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'))
-            from_email = Email("usermanagement@gmail.com")
+        if len(email.get()) != 0:
+            sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
+            from_email = Email("admin@usernamagement.com")
             to_email = Email(email.get())
             subject = "Your account has been created!"
             content = Content("text/plain", "and easy to do anywhere, even with Python")
@@ -51,9 +50,9 @@ def register_user():
             print(response.status_code)
             print(response.body)
             print(response.headers)
+            # Button(screen1, text="Exit", command=delete1).pack()
         else:
             pass
-        # Button(screen1, text="Exit", command=delete1).pack()
 
 def register():
     global screen1
@@ -95,7 +94,6 @@ def login_user():
         else:
             messagebox.showerror("Error!", "Your account information is invalid.")
 
-
 def login():
     global screen2
     screen2 = Toplevel(wn)
@@ -106,6 +104,7 @@ def login():
     global password_verify
     global username_entry1
     global password_entry1
+    global reset
 
     username_verify = StringVar()
     password_verify = StringVar()
@@ -116,11 +115,24 @@ def login():
     username_entry1 = Entry(screen2, textvariable = username_verify)
     username_entry1.pack()
     Label(screen2, text = "Password * ").pack()
-    password_entry1 =  Entry(screen2, textvariable = password_verify)
+    password_entry1 = Entry(screen2, textvariable = password_verify)
     password_entry1.pack()
     Label(screen2, text = "").pack()
-    Button(screen2, text = "Login", width = 10, height = 1, command = login_user).pack()
+    Button(screen2, text = "Login", width = 15, height = 1, command = login_user).pack()
+    reset= Label(screen2, text = "Forgot password?", width = 15, height = 1)
+    reset.pack()
+    reset.bind("<Button-1>",forgot_password)
+    reset.bind("<Enter>",red_text)
+    reset.bind("<Leave>",black_text)
 
+def forgot_password(event=None):
+    print("Forgot password!")
+
+def red_text(event=None):
+    reset.config(fg="red")
+
+def black_text(event=None):
+    reset.config(fg="black")
 
 def logout():
     screen3.destroy()

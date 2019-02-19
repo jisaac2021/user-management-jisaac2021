@@ -4,6 +4,7 @@ import sqlite3
 import hashlib
 import sendgrid
 import os
+import random
 from sendgrid.helpers.mail import *
 
 conn = sqlite3.connect("userinfo.db")
@@ -40,7 +41,7 @@ def register_user():
         conn.commit()
         messagebox.showinfo("Success!", "Account created.\nLog in from the main menu.")
         if len(email.get()) != 0:
-            sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
+            sg = sendgrid.SendGridAPIClient(apikey='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')
             from_email = Email("admin@usernamagement.com")
             to_email = Email(email.get())
             subject = "Your account has been created!"
@@ -126,7 +127,40 @@ def login():
     reset.bind("<Leave>",black_text)
 
 def forgot_password(event=None):
-    print("Forgot password!")
+
+    Label(screen2, text = "Username * ").pack()
+    username_entry4 = Entry(screen2, textvariable = username_verify4)
+
+    Label(screen2, text = "Email * ").pack()
+    email_entry4 = Entry(screen2, textvariable = email_verify4)
+
+
+    find_user = ("SELECT * FROM user WHERE username = ? AND email = ?")
+    c.execute(find_user,[username_verify4.get(),email_verify4.get()])
+    if c.fetchall():
+
+        resetpass = random.randit(1000000,1000000000)
+
+
+        sg = sendgrid.SendGridAPIClient(apikey='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')
+        from_email = Email("admin@usernamagement.com")
+        to_email = Email(email.get())
+        subject = "Your account has been created!"
+        content = Content("Hi, here is your vefication code: " + resetpass)
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+
+
+
+
+        #Label(screen2, text="Logged in!").pack()
+        #Button(screen2, text="OK", command=delete2).pack()
+        dashboard()
+    else:
+        messagebox.showerror("Error!", "Your account information is invalid.")
 
 def red_text(event=None):
     reset.config(fg="red")
@@ -170,16 +204,20 @@ def edit():
 
 def update_user():
     find_user = ("SELECT * FROM user WHERE username = ? AND password = ?")
-    c.execute(find_user,[oldusername.get(),oldpassword.get()])
+    password_hash2 = hashlib.md5(oldpassword.get().encode('utf-8')).hexdigest()
+    c.execute(find_user,[oldusername.get(),password_hash2])
     if (newusername.get() == oldusername.get()) and (newpassword.get() == oldpassword.get()):
         messagebox.showerror("Error!", "The information is the same. Try again.")
     elif not c.fetchall():
         messagebox.showerror("Error!", "Please enter valid account information.")
     else:
-        c.execute('UPDATE user SET username = ? WHERE username = ?', (newusername.get(), oldusername.get()))
-        c.execute('UPDATE user SET password = ? WHERE password = ?', (newpassword.get(), oldpassword.get()))
-        conn.commit()
-        messagebox.showinfo("Success!", "Account information updated")
+        try:
+            c.execute('UPDATE user SET username = ? WHERE username = ?', (newusername.get(), oldusername.get()))
+            c.execute('UPDATE user SET password = ? WHERE password = ?', (newpassword.get(), oldpassword.get()))
+            conn.commit()
+            messagebox.showinfo("Success!", "Account information updated.")
+        except sqlite3.IntegrityError:
+            messagebox.showerror("Error!", "An account already exists with that information.")
 
 def delete():
     result = messagebox.askquestion("Delete", "Are you sure? This will permanently delete your account.", icon='warning')

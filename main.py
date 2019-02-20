@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter.simpledialog import askstring
+from tkinter.messagebox import showinfo
 import sqlite3
 import hashlib
 import sendgrid
@@ -132,14 +133,12 @@ def login():
     Label(screen2, text = "Password * ").pack()
     password_entry1 = Entry(screen2, textvariable = password_verify)
     password_entry1.pack()
-    Label(screen2, text = "").pack()
     Button(screen2, text = "Login", width = 15, height = 1, command = login_user).pack()
-    Label(screen2, text = "").pack()
     reset = Label(screen2, text = "Forgot password?", width = 15, height = 1)
     reset.pack()
     reset.bind("<Button-1>",forgot_password)
-    #reset.bind("<Enter>",red_text)
-    #reset.bind("<Leave>",black_text)
+    reset.bind("<Enter>",red_text)
+    reset.bind("<Leave>",black_text)
 
 def forgot_password(event=None):
     global screen5
@@ -167,14 +166,11 @@ def forgot_password(event=None):
 
 
 def reset_password():
-
     find_user = ("SELECT * FROM user WHERE username = ? AND email = ?")
-    print(username_verify4.get())
-    print(email_verify.get())
     c.execute(find_user,[username_verify4.get(),email_verify.get()])
     if c.fetchall():
 
-        resetpass = random.randint(1000000,1000000000)
+        resetpass = random.randint(100000,999999)
 
         sg = sendgrid.SendGridAPIClient(apikey='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')
         data = {
@@ -203,9 +199,20 @@ def reset_password():
         print(response.body)
         print(response.headers)
 
+        code = askstring('Verification code', 'Enter your 6-digit verification code.')
 
-        #Label(screen2, text="Logged in!").pack()
-        #Button(screen2, text="OK", command=delete2).pack()
+        if int(code) == resetpass:
+
+            newpass = askstring('Set new password', 'Enter your new password.')
+            hashnewpass = hashlib.md5(newpass.encode('utf-8')).hexdigest()
+
+            c.execute('UPDATE user SET password = ? WHERE username = ? and email = ?', (hashnewpass, username_verify4.get(), email_verify.get()))
+            conn.commit()
+            messagebox.showinfo("Success!", "Account information updated.")
+
+        else:
+            messagebox.showinfo("Error!", "The verification code you entered was invalid.")
+
     else:
         messagebox.showerror("Error!", "Your account information is invalid.")
 
@@ -219,7 +226,6 @@ def logout():
     screen3.destroy()
     username_entry1.delete(0, END)
     password_entry1.delete(0, END)
-    print("Logging out...")
 
 def edit():
     global screen4
@@ -269,7 +275,6 @@ def update_user():
 def delete():
     result = messagebox.askquestion("Delete", "Are you sure? This will permanently delete your account.", icon='warning')
     if result == 'yes':
-        print("Deleting...")
         c.execute('DELETE FROM user WHERE username = ?', (username_verify.get(),))
         conn.commit()
         delete3()

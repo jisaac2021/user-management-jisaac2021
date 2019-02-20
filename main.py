@@ -14,8 +14,6 @@ c.execute("CREATE TABLE IF NOT EXISTS user(username text NOT NULL UNIQUE, passwo
 c.execute("SELECT * FROM user")
 conn.commit()
 
-screen3 = None
-
 def delete1():
     screen1.destroy()
 

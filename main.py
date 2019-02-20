@@ -1,11 +1,11 @@
 from tkinter import *
 from tkinter import messagebox
+from tkinter.simpledialog import askstring
 import sqlite3
 import hashlib
 import sendgrid
 import os
 import random
-from sendgrid.helpers.mail import *
 
 conn = sqlite3.connect("userinfo.db")
 c = conn.cursor()
@@ -42,12 +42,28 @@ def register_user():
         messagebox.showinfo("Success!", "Account created.\nLog in from the main menu.")
         if len(email.get()) != 0:
             sg = sendgrid.SendGridAPIClient(apikey='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')
-            from_email = Email("admin@usernamagement.com")
-            to_email = Email(email.get())
-            subject = "Your account has been created!"
-            content = Content("text/plain", "and easy to do anywhere, even with Python")
-            mail = Mail(from_email, subject, to_email, content)
-            response = sg.client.mail.send.post(request_body=mail.get())
+            data = {
+              "personalizations": [
+                {
+                  "to": [
+                    {
+                      "email": email_verify.get()
+                    }
+                  ],
+                  "subject": "Your account has been created!"
+                }
+              ],
+              "from": {
+                "email": "admin@usermanagement.com"
+              },
+              "content": [
+                {
+                  "type": "text/plain",
+                  "value": "Welcome to the User Management system! Log in to access your dashboard."
+                }
+              ]
+            }
+            response = sg.client.mail.send.post(request_body=data)
             print(response.status_code)
             print(response.body)
             print(response.headers)
@@ -82,18 +98,16 @@ def register():
     Button(screen1, text = "Register", width = 10, height = 1, command = register_user).pack()
 
 def login_user():
-    if (screen3 is not None) and screen3.winfo_exists():
-        messagebox.showerror("Error!", "You are already logged in, " + username_verify.get() + ".")
+
+    find_user = ("SELECT * FROM user WHERE username = ? AND password = ?")
+    password_checkhash = hashlib.md5(password_verify.get().encode('utf-8')).hexdigest()
+    c.execute(find_user,[username_verify.get(),password_checkhash])
+    if c.fetchall():
+        #Label(screen2, text="Logged in!").pack()
+        #Button(screen2, text="OK", command=delete2).pack()
+        dashboard()
     else:
-        find_user = ("SELECT * FROM user WHERE username = ? AND password = ?")
-        password_checkhash = hashlib.md5(password_verify.get().encode('utf-8')).hexdigest()
-        c.execute(find_user,[username_verify.get(),password_checkhash])
-        if c.fetchall():
-            #Label(screen2, text="Logged in!").pack()
-            #Button(screen2, text="OK", command=delete2).pack()
-            dashboard()
-        else:
-            messagebox.showerror("Error!", "Your account information is invalid.")
+        messagebox.showerror("Error!", "Your account information is invalid.")
 
 def login():
     global screen2
@@ -120,45 +134,78 @@ def login():
     password_entry1.pack()
     Label(screen2, text = "").pack()
     Button(screen2, text = "Login", width = 15, height = 1, command = login_user).pack()
-    reset= Label(screen2, text = "Forgot password?", width = 15, height = 1)
+    Label(screen2, text = "").pack()
+    reset = Label(screen2, text = "Forgot password?", width = 15, height = 1)
     reset.pack()
     reset.bind("<Button-1>",forgot_password)
-    reset.bind("<Enter>",red_text)
-    reset.bind("<Leave>",black_text)
+    #reset.bind("<Enter>",red_text)
+    #reset.bind("<Leave>",black_text)
 
 def forgot_password(event=None):
+    global screen5
+    screen5 = Toplevel(wn)
+    screen5.title("Reset Password")
+    screen5.geometry("300x250")
 
-    Label(screen2, text = "Username * ").pack()
-    username_entry4 = Entry(screen2, textvariable = username_verify4)
+    global username_verify4
+    global email_verify
+    global username_entry4
+    global email_entry
 
-    Label(screen2, text = "Email * ").pack()
-    email_entry4 = Entry(screen2, textvariable = email_verify4)
+    username_verify4 = StringVar()
+    email_verify = StringVar()
 
+    Label(screen5, text = "Username * ").pack()
+    username_entry4 = Entry(screen5, textvariable = username_verify4)
+    username_entry4.pack()
+
+    Label(screen5, text = "Email * ").pack()
+    email_entry = Entry(screen5, textvariable = email_verify)
+    email_entry.pack()
+
+    Button(screen5, text = "Reset Password", width = 15, height = 1, command = reset_password).pack()
+
+
+def reset_password():
 
     find_user = ("SELECT * FROM user WHERE username = ? AND email = ?")
-    c.execute(find_user,[username_verify4.get(),email_verify4.get()])
+    print(username_verify4.get())
+    print(email_verify.get())
+    c.execute(find_user,[username_verify4.get(),email_verify.get()])
     if c.fetchall():
 
-        resetpass = random.randit(1000000,1000000000)
-
+        resetpass = random.randint(1000000,1000000000)
 
         sg = sendgrid.SendGridAPIClient(apikey='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')
-        from_email = Email("admin@usernamagement.com")
-        to_email = Email(email.get())
-        subject = "Your account has been created!"
-        content = Content("Hi, here is your vefication code: " + resetpass)
-        mail = Mail(from_email, subject, to_email, content)
-        response = sg.client.mail.send.post(request_body=mail.get())
+        data = {
+          "personalizations": [
+            {
+              "to": [
+                {
+                  "email": email_verify.get()
+                }
+              ],
+              "subject": "Reset your password"
+            }
+          ],
+          "from": {
+            "email": "admin@usermanagement.com"
+          },
+          "content": [
+            {
+              "type": "text/plain",
+              "value": "Hello, %s. Enter this verification code to reset your password: %d." % (username_verify4.get(), resetpass)
+            }
+          ]
+        }
+        response = sg.client.mail.send.post(request_body=data)
         print(response.status_code)
         print(response.body)
         print(response.headers)
 
 
-
-
         #Label(screen2, text="Logged in!").pack()
         #Button(screen2, text="OK", command=delete2).pack()
-        dashboard()
     else:
         messagebox.showerror("Error!", "Your account information is invalid.")
 

@@ -14,13 +14,8 @@ c.execute("CREATE TABLE IF NOT EXISTS user(username text NOT NULL UNIQUE, passwo
 c.execute("SELECT * FROM user")
 conn.commit()
 
-def delete1():
-    screen1.destroy()
-
-def delete2():
-    screen2.destroy()
-
 def delete3():
+    """Destroy screen3 from a user's screen"""
     screen3.destroy()
 
 def register_user():
@@ -106,8 +101,6 @@ def login_user():
     password_checkhash = hashlib.md5(password_verify.get().encode('utf-8')).hexdigest()
     c.execute(find_user,[username_verify.get(),password_checkhash])
     if c.fetchall():
-        #Label(screen2, text="Logged in!").pack()
-        #Button(screen2, text="OK", command=delete2).pack()
         dashboard()
     else:
         messagebox.showerror("Error!", "Your account information is invalid.")

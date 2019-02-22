@@ -24,6 +24,8 @@ def delete3():
     screen3.destroy()
 
 def register_user():
+    """Take a username and password and save it to the userinfo.db database.
+    Send an email (if provided) in the user or return an error in the case that there already exists a user with that username."""
     find_user = ("SELECT * FROM user WHERE username = ?")
     c.execute(find_user,[(username.get())])
     if len(username.get()) == 0:
@@ -71,6 +73,7 @@ def register_user():
             pass
 
 def register():
+    """Create the register window and prompt a user to enter their username, password, and email"""
     global screen1
     screen1 = Toplevel(wn)
     screen1.title("Register")
@@ -97,7 +100,8 @@ def register():
     Button(screen1, text = "Register", width = 10, height = 1, command = register_user).pack()
 
 def login_user():
-
+    """Take an inputted username and password and check it against the database containing users' info.
+    Return an error for a non-existent username or incorrect password."""
     find_user = ("SELECT * FROM user WHERE username = ? AND password = ?")
     password_checkhash = hashlib.md5(password_verify.get().encode('utf-8')).hexdigest()
     c.execute(find_user,[username_verify.get(),password_checkhash])
@@ -109,6 +113,7 @@ def login_user():
         messagebox.showerror("Error!", "Your account information is invalid.")
 
 def login():
+    """Create the login window and prompt a user to enter their username and password"""
     global screen2
     screen2 = Toplevel(wn)
     screen2.title("Login")
@@ -139,6 +144,7 @@ def login():
     reset.bind("<Leave>",black_text)
 
 def forgot_password(event=None):
+    """Create the reset password window and prompt a user to enter their username and email"""
     global screen5
     screen5 = Toplevel(wn)
     screen5.title("Reset Password")
@@ -164,6 +170,7 @@ def forgot_password(event=None):
 
 
 def reset_password():
+    """Allow a user to reset their password through a secret verification key sent via email."""
     find_user = ("SELECT * FROM user WHERE username = ? AND email = ?")
     c.execute(find_user,[username_verify4.get(),email_verify.get()])
     if c.fetchall():
@@ -215,17 +222,21 @@ def reset_password():
         messagebox.showerror("Error!", "Your account information is invalid.")
 
 def red_text(event=None):
+    """Changes the text to red"""
     reset.config(fg="red")
 
 def black_text(event=None):
+    """Changes the text to black"""
     reset.config(fg="black")
 
 def logout():
+    """Logs the user out"""
     screen3.destroy()
     username_entry1.delete(0, END)
     password_entry1.delete(0, END)
 
 def edit():
+    """Create the edit window and prompt a user to choose a new username/password"""
     global screen4
     screen4 = Toplevel(wn)
     screen4.title("Edit")
@@ -254,6 +265,7 @@ def edit():
     Button(screen4, text = "Update", width = 10, height = 1, command = update_user).pack()
 
 def update_user():
+    """Update the database with a user's new username and/or password"""
     find_user = ("SELECT * FROM user WHERE username = ? AND password = ?")
     password_hash2 = hashlib.md5(oldpassword.get().encode('utf-8')).hexdigest()
     c.execute(find_user,[oldusername.get(),password_hash2])
@@ -271,6 +283,7 @@ def update_user():
             messagebox.showerror("Error!", "An account already exists with that information.")
 
 def delete():
+    """Delete a user's account from the database"""
     result = messagebox.askquestion("Delete", "Are you sure? This will permanently delete your account.", icon='warning')
     if result == 'yes':
         c.execute('DELETE FROM user WHERE username = ?', (username_verify.get(),))
@@ -282,6 +295,7 @@ def delete():
         messagebox.showinfo("Alert!", "Your account remains active.")
 
 def dashboard():
+    """Create the dashboard window and allow the user to log out, edit their information, or delete their account"""
     global screen3
     screen3 = Toplevel(wn)
     screen3.title("Dashboard")
@@ -292,6 +306,7 @@ def dashboard():
     Button(screen3, text = "Delete account", command = delete, fg = 'red').pack()
 
 def main():
+    """Create the main menu window so that a user can choose to login or register"""
     global wn
     wn = Tk()
     wn.geometry("300x250")

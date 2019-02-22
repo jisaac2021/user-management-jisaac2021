@@ -31,7 +31,7 @@ This should prompt the user with the two options: to Login or Register.
 ### Main Functions
 
 #### `register()`
-This function takes a username and password and saves it the the userinfo.db database. It returns an error in the case that there already exists a user with that username. Note that the `.gitignore` file is created in order to avoid
+This function takes a username and password and saves it to the userinfo.db database. It returns an error in the case that there already exists a user with that username. Note that the `.gitignore` file is created in order to avoid
 committing sensitive user data to your repository! DO NOT COMMIT THE DATABASE!
 
 ![image](https://github.com/kehillah-coding-2019/user-management-jisaac2021/blob/master/register.png)
